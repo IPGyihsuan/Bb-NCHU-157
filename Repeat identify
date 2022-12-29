@@ -1,0 +1,5 @@
+##repeatmasker
+#database
+/path/RepeatModeler-2.0.3/BuildDatabase -name 157 157poblish_genome.fa
+/path/RepeatModeler-2.0.3/RepeatModeler -database 157 -pa 20 -LTRStruct 
+/path/RepeatMasker/RepeatMasker 157poblish_genome.fa -lib 157-families.fa  -e rmblast -xsmall -s -gff -pa 12
