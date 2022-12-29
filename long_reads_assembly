@@ -1,0 +1,19 @@
+#guppy
+guppy_basecaller -i ./barcode02 -s ./157basecall -c dna_r9.4.1_450bps_hac.cfg --num_callers 1 --gpu_runners_per_device 12 --compress_fastq -x 'auto'
+cat ./157basecall/*.fastq.gz > 157basecalling.fastq.gz
+
+#porechop
+porechop -i 157basecalling.fastq.gz -o 157porechop.fastq.gz --threads 40
+
+#nanopolish
+gunzip 157porechop.fastq.gz
+paste - - - - < 157porechop.fastq | cut -f 1,2 | sed 's/^@/>/' | tr "\t" "\n" > 157porechop.fasta
+nanopolish index -d ./barcode02 157porechop.fasta
+canu -p 157canu -d 157canu genomeSize=32m corOutCoverage=81 -nanopore-raw 157basecalling.fastq
+
+bwa index draft.fa
+bwa mem -x ont2d -t 8 157canu.contigs.fasta 157porechop.fasta | samtools sort -o 157.sorted.bam -T 157.tmp
+samtools index 157.sorted.bam
+
+python3 nanopolish_makerange.py 157canu.contigs.fasta | parallel --results nanopolish.results -P 8 nanopolish variants --consensus -o polished.{1}.vcf -w {1} -r 157porechop.fasta -b 157.sorted.bam -g 157canu.contigs.fasta -t 4 --min-candidate-frequency 0.1
+nanopolish vcf2fasta -g 157canu.contigs.fasta polished.*.vcf > 157polished_genome.fa
