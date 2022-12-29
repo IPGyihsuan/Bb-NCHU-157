@@ -1,0 +1,9 @@
+fastq-dump --split-3 SRR3105334
+
+/path/FunGAP/download_sister_orgs.py --taxon "Beauveria bassiana" --email_address lisa19980923@gmail.com --num_sisters 1
+zcat sister_orgs/*faa.gz > prot_db.faa
+
+/path/FunGAP/get_augustus_species.py --genus_name "Beauveria" --email_address lisa19980923@gmail.com
+#get the result fusarium_graminearum
+
+/Data/liyh/FunGAP/fungap.py --genome_assembly 157polished_genome.fa --trans_read_1 SRR3105334_1.fastq --trans_read_2 SRR3105334_2.fastq --augustus_species fusarium_graminearum --busco_dataset fungi_odb10 --sister_proteome prot_db.faa --num_cores 8
